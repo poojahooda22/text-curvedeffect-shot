@@ -1,12 +1,60 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+
+const LINE_GAP = 80;
+const LINE_COLOR = "rgba(0,0,0,0.06)";
+const DROP_DURATION = 600; // ms per line
+const STAGGER = 30; // ms between each line
 
 export default function LandingUI() {
   const [visible, setVisible] = useState(false);
+  const dropletsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 100);
     return () => clearTimeout(t);
   }, []);
+
+  const lineCount = useMemo(
+    () => Math.floor(window.innerWidth / LINE_GAP),
+    []
+  );
+
+  useEffect(() => {
+    if (!dropletsRef.current || lineCount === 0) return;
+
+    const ctx = gsap.context(() => {
+      const droplets = gsap.utils.toArray<HTMLElement>('.falling-droplet');
+
+      droplets.forEach((drop) => {
+        // Recursive function to animate each droplet sequentially
+        const animateDrop = () => {
+          const duration = gsap.utils.random(4, 7);
+          const delay = gsap.utils.random(0, 10); // randomly start between 0 and 10 seconds
+
+          gsap.fromTo(
+            drop,
+            {
+              y: -20,
+              opacity: gsap.utils.random(0.4, 1),
+            },
+            {
+              y: window.innerHeight + 20,
+              duration: duration,
+              delay: delay,
+              ease: "none",
+              onComplete: animateDrop, // Repeat the animation after it finishes falling completely
+            }
+          );
+        };
+
+        // Start the continuous animation loop
+        animateDrop();
+      });
+    }, dropletsRef);
+
+    return () => ctx.revert();
+  }, [lineCount]);
 
   return (
     <div
@@ -16,6 +64,47 @@ export default function LandingUI() {
         transition: "opacity 0.8s ease",
       }}
     >
+      {/* ── Animated falling grid lines ── */}
+      <div className="absolute inset-0 overflow-hidden" ref={dropletsRef}>
+        {Array.from({ length: lineCount }, (_, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+              left: `${(i / lineCount) * 100}%`,
+              top: 0,
+              width: "1.2px",
+              height: "100%",
+            }}
+          >
+            {/* The main grid line */}
+            <div
+              style={{
+                width: "100%",
+                height: "100%",
+                background: LINE_COLOR,
+                transform: "scaleY(0)",
+                transformOrigin: "top",
+                animation: `dropLine ${DROP_DURATION}ms ease-out ${i * STAGGER}ms forwards`,
+              }}
+            />
+            {/* Single falling droplet per line */}
+            <div
+              className="falling-droplet"
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "120%",
+                height: `${Math.floor(Math.random() * 8) + 6}px`, // 6 to 14 pixels randomly
+                background: "rgba(0,0,0,0.8)",
+                opacity: 0, // initially hidden
+              }}
+            />
+          </div>
+        ))}
+      </div>
+
       {/* ── Navbar ── */}
       <nav
         className="pointer-events-auto absolute top-0 left-0 right-0 flex items-center justify-between px-8 h-14"
@@ -212,6 +301,10 @@ export default function LandingUI() {
         @keyframes pulse-dot {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.3; }
+        }
+        @keyframes dropLine {
+          from { transform: scaleY(0); }
+          to   { transform: scaleY(1); }
         }
       `}</style>
     </div>

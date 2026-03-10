@@ -6,7 +6,7 @@ function App() {
     <>
       <TextCurvedEffect
         text={"CREATIVE\nDEVELOPER"}
-        fontSize={320}
+        fontSize={300}
         fontFamily="'Noto Sans', sans-serif"
         fontWeight="bold"
         textColor="#000000"

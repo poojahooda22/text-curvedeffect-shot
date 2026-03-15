@@ -12,7 +12,7 @@ Currently, two official plugins are available:
 The React Compiler is not enabled on this template because of its impact on dev & build performance. To ads [this ocumentation](htts://react.dev/larn/react-cmpier/instalation)
 ## Expanding the ESLint configuration
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rul
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint ru
 
 ```js
 export default defineConfig([
